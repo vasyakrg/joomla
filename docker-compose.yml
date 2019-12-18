@@ -1,0 +1,55 @@
+﻿version: '3.5'
+
+services:
+  backup:
+    image: ${DOCKER_IMAGE_BACKUP}
+    restart: always
+    container_name: ${SERVICE_NAME}_${CONTAINER_NAME_BACKUP}
+    command: site backup --html ${BACKUP_DIR} --db --storage B2://${B2_PATH} --container ${SERVICE_NAME}_${CONTAINER_NAME_JOOMLA}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/www/:${BACKUP_DIR}
+    environment:
+      - DB_TYPE=mysql
+      - DB_HOST=${CONTAINER_NAME_MYSQL}
+      - DB_PASS=${DB_PASS}
+      - DB_USER=${DB_USER}
+      - DB_NAME=${DB_NAME}
+      - BACKUP_SCHEDULE=${BACKUP_SCHEDULE}
+      - BACKUP_DIR=${BACKUP_DIR}
+      - SITE_NAME=${SERVICE_NAME}
+      - CONTAINER_NAME_JOOMLA=${CONTAINER_NAME_JOOMLA}
+    tmpfs:
+      - /tmp
+    networks:
+      - net
+
+  joomla:
+    image: ${DOCKER_IMAGE_JOOMLA}
+    container_name: ${SERVICE_NAME}_${CONTAINER_NAME_JOOMLA}
+    restart: always
+    environment:
+      JOOMLA_DB_HOST: ${CONTAINER_NAME_MYSQL}
+      JOOMLA_DB_NAME: ${DB_NAME}
+      JOOMLA_DB_PASSWORD: ${DB_PASS}
+    ports:
+    - "${IP_ADDRESS}:${EXTERNAL_PORT}:80"
+    volumes:
+    -  ./data/www/:/var/www/html
+    networks:
+    - net
+
+  joomladb:
+    container_name: ${SERVICE_NAME}_${CONTAINER_NAME_MYSQL}
+    image: ${DOCKER_IMAGE_MYSQL}
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    networks:
+    - net
+
+networks:
+    net:
+        name: ${SERVICE_NETWORK}
