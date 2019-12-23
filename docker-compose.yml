@@ -5,7 +5,7 @@ services:
     image: ${DOCKER_IMAGE_BACKUP}
     restart: always
     container_name: ${SERVICE_NAME}_${CONTAINER_NAME_BACKUP}
-    command: site backup --html ${BACKUP_DIR} --db --storage B2://${B2_PATH} --container ${SERVICE_NAME}_${CONTAINER_NAME_JOOMLA}
+    command: site backup --html ${BACKUP_DIR} --db --storage S3://${S3_PATH} --container ${SERVICE_NAME}_${CONTAINER_NAME_JOOMLA}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data/www/:${BACKUP_DIR}
@@ -18,6 +18,11 @@ services:
       - BACKUP_SCHEDULE=${BACKUP_SCHEDULE}
       - BACKUP_DIR=${BACKUP_DIR}
       - SITE_NAME=${SERVICE_NAME}
+      - S3_APPLICATION_KEY=${S3_APPLICATION_KEY}
+      - S3_ACCOUNT_ID=${S3_ACCOUNT_ID}
+      - S3_HOST_BASE=${S3_HOST_BASE}
+      - S3_PATH=${S3_PATH}
+      - S3_BACKET=${S3_BACKET}
       - CONTAINER_NAME_JOOMLA=${CONTAINER_NAME_JOOMLA}
     tmpfs:
       - /tmp
